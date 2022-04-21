@@ -1,5 +1,5 @@
-import myutils
 import numpy as np
+import random
 
 
 def train_test_split(X, y, test_size=0.33, random_state=None, shuffle=True):
@@ -32,7 +32,7 @@ def train_test_split(X, y, test_size=0.33, random_state=None, shuffle=True):
     shuff_X = X[:]  # copy the table
     shuff_y = y[:]
     if shuffle:
-        myutils.randomize_in_place(shuff_X, shuff_y)
+        randomize_in_place(shuff_X, shuff_y)
 
     # randomize the table
     n = len(X)
@@ -71,7 +71,7 @@ def kfold_cross_validation(X, n_splits=5, random_state=None, shuffle=False):
 
     X_idxs = list(range(len(X)))
     if shuffle:
-        myutils.randomize_in_place(X_idxs)
+        randomize_in_place(X_idxs)
     fold_size = int(len(X) / n_splits)
     X_train_folds = []
     X_test_folds = []
@@ -115,9 +115,9 @@ def stratified_kfold_cross_validation(X, y, n_splits=5, random_state=None, shuff
 
     X_idxs = list(range(0, len(X)))
     if shuffle:
-        myutils.randomize_in_place(X_idxs)
+        randomize_in_place(X_idxs)
 
-    groups = myutils.group_by(X_idxs, y)
+    groups = group_by(X_idxs, y)
 
     i = 0
     fold = 0
@@ -357,3 +357,50 @@ def binary_f1_score(y_true, y_pred, labels=None, pos_label=None):
         f1 = 2 * (precision * recall) / (precision + recall)
 
     return f1
+
+
+def randomize_in_place(a_list, par_list=None):
+    for i in range(len(a_list)):
+        j = random.randint(0, len(a_list) - 1)
+        a_list[i], a_list[j] = a_list[j], a_list[i]
+        if par_list is not None:
+            par_list[i], par_list[j] = par_list[j], par_list[i]
+
+
+def group_by(idxs, y):
+    """Groups instances by given column in table
+        Args:
+            table(list of list): 2d dataset
+            header(list of str): list of attributes
+            group_by_col_name(str): name of column to extract
+        Returns:
+            group_names: unique values in table
+            group_subtables: table of fitting instances for groups
+        """
+    group_names = sorted(list(set(y)))  # e.g. [75, 76, 77]
+    group_subtables = [[] for _ in group_names]  # e.g. [[], [], []]
+
+    for i in idxs:
+        # which subtable does this row belong?
+        groupby_val_subtable_index = group_names.index(y[i])
+        group_subtables[groupby_val_subtable_index].append(
+            [i, y[i]])  # make a copy
+
+    return group_subtables
+
+
+def cross_val_stats(classifier_name, trues, predicts):
+    stats = []
+    stat_names = ['Accuracy', 'Error Rate', 'Confusion Matrix']
+
+    stats.append(accuracy_score(
+        trues, predicts, normalize=True))
+    stats.append(1 - stats[0])
+    stats.append(confusion_matrix(
+        trues, predicts, list(set(trues))))
+    print('-' * 10)
+    print('Classifier:', classifier_name)
+    print('-' * 10)
+    for j in range(len(stats)):
+        print('-' * 10)
+        print(stat_names[j] + ':', stats[j])
