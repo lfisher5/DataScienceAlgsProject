@@ -8,7 +8,6 @@
 ##############################################'''
 import numpy as np
 import random
-import myevaluation
 import numpy as np
 from itertools import chain
 
@@ -141,7 +140,7 @@ def get_column(table, col_index):
     return col
 
 
-def get_categorical_frequencies(table, col_index, is_table=True):
+def get_categorical_frequencies(table, header, col_name):
     """Gets categorical frequencies for column values in table
         Args:
             table(list of list): 2d dataset
@@ -151,12 +150,10 @@ def get_categorical_frequencies(table, col_index, is_table=True):
             values: unique values in table
             counts: frequency of values
         """
-    if is_table:
-        col = get_column(table, col_index)
-    else:
-        col = table
+
+    col = get_column_orig(table, header, col_name)
     col = [str(x) for x in col]
-    values = list(sorted(set(col)))
+    values = list(set(col))
     counts = [0] * len(values)
 
     for val in col:
@@ -199,15 +196,6 @@ def calculate_acc(predictions, y_test):
     return 100 * sum / len(predictions)
 
 
-def pretty_print_performance(model_name, y_true, y_pred):
-    print('----------------------------')
-    print(model_name)
-    acc = myevaluation.accuracy_score(y_true, y_pred)
-    print('Accuracy:', acc)
-    print('Error Rate:', 1-acc)
-    print('----------------------------')
-
-
 def group_by_values(table, col_idx):
     """Groups instances by given column in table
         Args:
@@ -232,55 +220,31 @@ def group_by_values(table, col_idx):
     return group_names, group_subtables
 
 
-def cross_val_stats(classifier_name, trues, predicts):
-    stats = []
-    stat_names = ['Accuracy', 'Error Rate', 'Precision',
-                  'Recall', 'F1 Score', 'Confusion Matrix']
+def discretize_to_single_col(table, header, cols_to_consider):
 
-    stats.append(myevaluation.accuracy_score(
-        trues, predicts, normalize=True))
-    stats.append(1 - stats[0])
-    stats.append(myevaluation.binary_precision_score(trues, predicts))
-    stats.append(myevaluation.binary_recall_score(trues, predicts))
-    stats.append(myevaluation.binary_f1_score(trues, predicts))
-    stats.append(myevaluation.confusion_matrix(
-        trues, predicts, list(set(trues))))
-    print('-' * 10)
-    print('Classifier:', classifier_name)
-    print('-' * 10)
-    for j in range(len(stats)):
-        print('-' * 10)
-        print(stat_names[j] + ':', stats[j])
+    col_idxs = [header.index(cols_to_consider[i])
+                for i in range(len(cols_to_consider))]
+    cols_table = [[row[i]
+                   for i in range(len(row)) if i in col_idxs] for row in table]
+
+    for i in range(len(table)):
+        max_idx = cols_table[i].index(max(cols_table[i]))
+        table[i].append(cols_to_consider[max_idx])
 
 
-def multi_model_stats_gen(data, target_vals):
-    X_train_idx_folds, X_test_idx_folds = myevaluation.stratified_kfold_cross_validation(
-        data, target_vals, n_splits=10)
-
-    X_train = [[data[idx] for idx in fold] for fold in X_train_idx_folds]
-    y_train = [[target_vals[idx] for idx in fold]
-               for fold in X_train_idx_folds]
-    X_test = [[data[idx] for idx in fold] for fold in X_test_idx_folds]
-    y_test = [[target_vals[idx] for idx in fold]
-              for fold in X_test_idx_folds]
-
-    knn = MyKNeighborsClassifier(3)
-    dummy = MyDummyClassifier()
-    bayes = MyNaiveBayesClassifier()
-    dec_tree = MyDecisionTreeClassifier()
-
-    classifier_names = ['knn', 'bayes', 'dummy', 'decision_tree']
-    models = [knn, bayes, dummy, dec_tree]
-    preds = [[] for _ in models]
-
-    for i in range(len(X_train)):
-        for j in range(len(models)):
-            models[j].fit(X_train[i], y_train[i])
-            preds[j] += models[j].predict(X_test[i])
-
-    # converting 2d list into 1d
-    # using chain.from_iterables
-    y_test = list(chain.from_iterable(y_test))
-
-    for i in range(len(preds)):
-        cross_val_stats(classifier_names[i], y_test, preds[i])
+def get_column_orig(table, header, col_name):
+    """Gets column from table
+        Args:
+            table(list of list): 2d dataset
+            header(list of str): list of attributes
+            col_name(str): name of column to extract
+        Returns:
+            col: list from of extracted column
+        """
+    col_index = header.index(col_name)
+    col = []
+    for row in table:
+        value = row[col_index]
+        if value != "NA":
+            col.append(value)
+    return col

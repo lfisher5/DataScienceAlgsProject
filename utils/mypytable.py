@@ -394,3 +394,13 @@ class MyPyTable:
                 dup_row[col_idx] = split_row[0]
                 self.data[i][col_idx].pop(0)
                 self.data.append(dup_row)
+
+    def drop_cols(self, cols):
+
+        col_idxs = [self.column_names.index(col) for col in cols]
+
+        self.data = [[row[i] for i in range(
+            len(row)) if i not in col_idxs] for row in self.data]
+
+        self.column_names = [
+            col_name for col_name in self.column_names if col_name not in cols]
