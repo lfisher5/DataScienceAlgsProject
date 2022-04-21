@@ -123,6 +123,90 @@ def compute_euclidean_distance(v1, v2):
     return dist
 
 
+def compute_equal_width_cutoffs(values, num_bins):
+    """computes cutoffs for list of values for num_bins
+        Args:
+            values(list): values to create cutoffs for
+            num_bins(int): bins to create for data
+        Returns:
+            cutoffs: list of cutoff values
+        """
+    values_range = max(values) - min(values)
+    bin_width = values_range / num_bins  # float
+    # range() works well with integer start stop and steps
+    # np.arange() is for floating point start stop and steps
+    cutoffs = list(np.arange(min(values), max(values), bin_width))
+    cutoffs.append(max(values))  # exact max
+    # if your application allows, convert cutoffs to ints
+    # otherwise optionally round them
+    cutoffs = [round(cutoff, 2) for cutoff in cutoffs]
+    return cutoffs
+
+
+def compute_bin_frequencies(values, cutoffs):
+    """Gets frequencies for values in provided cutoffs
+        Args:
+            values(list): values to create cutoffs for
+            cutoffs: list of cutoff values
+        Returns:
+            freqs: list of frequencies for bins
+        """
+    freqs = [0 for _ in range(len(cutoffs) - 1)]
+
+    for value in values:
+        if value == max(values):
+            freqs[-1] += 1  # increment the last bin's freq
+        else:
+            for i in range(len(cutoffs) - 1):
+                if cutoffs[i] <= value < cutoffs[i + 1]:
+                    freqs[i] += 1
+    return freqs
+
+
+def range_discretization(range_edges, range_values, table, header, col_name):
+    """Discretizes data for given range
+        Args:
+            range_values(list): values to create cutoffs for
+            range_edges: list of cutoff values
+            table(list of list): 2d dataset
+            header(list of str): list of attributes
+            col_name(str): name of column to extract
+        Returns:
+            disc: parallel list of discrete labels
+        """
+    col = get_column_orig(table, header, col_name)
+    disc = []
+    for val in col:
+        i = 0
+        for i in range(len(range_values)):
+            if val < range_edges[i] and val > range_edges[i-1]:
+                disc.append(range_values[i])
+
+    return disc
+
+
+def get_array_frequencies(col):
+    """Gets categorical frequencies for column values in table
+        Args:
+            col(list of str): data list
+        Returns:
+            values: unique values in table
+            counts: frequency of values
+        """
+    col.sort()  # inplace
+    # parallel lists
+    values = []
+    counts = []
+    for value in col:
+        if value in values:  # seen it before
+            counts[-1] += 1  # okay because sorted
+        else:  # haven't seen it before
+            values.append(value)
+            counts.append(1)
+
+    return values, counts
+
+
 def get_column(table, col_index):
     """Gets column from table
         Args:
