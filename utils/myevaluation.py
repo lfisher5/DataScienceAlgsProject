@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from sklearn.metrics import accuracy_score
 
 
 def train_test_split(X, y, test_size=0.33, random_state=None, shuffle=True):
@@ -404,3 +405,7 @@ def cross_val_stats(classifier_name, trues, predicts):
     for j in range(len(stats)):
         print('-' * 10)
         print(stat_names[j] + ':', stats[j])
+
+
+def multi_cl_accuracy(predicts, trues):
+    return accuracy_score(trues, predicts, normalize=True)

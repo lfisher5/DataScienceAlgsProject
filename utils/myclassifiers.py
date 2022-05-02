@@ -1,6 +1,7 @@
 import operator
 import utils.myutils as myutils
 import math
+import random
 
 
 class MyDecisionTreeClassifier:
@@ -648,7 +649,8 @@ class MyModifiedDecisionTreeClassifier:
         # with the smallest Enew
         # for now, we will just choose randomly
         entropies = []
-        att_idxs = [self.header.index(att) for att in attributes]
+        selected_attributes = self.random_attribute_subset(attributes)
+        att_idxs = [self.header.index(att) for att in selected_attributes]
 
         for i in att_idxs:
             att_val_entropies = []
@@ -687,6 +689,14 @@ class MyModifiedDecisionTreeClassifier:
                     partitions[att_value].append(instance)
 
         return partitions
+
+    def random_attribute_subset(self, attributes):
+        # shuffle and pick first F
+        if len(attributes) < self.F:
+            return attributes
+        shuffled = attributes[:]  # make a copy
+        random.shuffle(shuffled)
+        return shuffled[:self.F]
 
     def tdidt(self, current_instances, available_attributes):
         # basic approach (uses recursion!!):

@@ -1,6 +1,8 @@
 import random
 from utils import myevaluation
 from utils import myclassifiers
+import operator
+from itertools import chain
 
 
 class MyRandomForestClassifier:
@@ -27,7 +29,7 @@ class MyRandomForestClassifier:
         self.M = None
         self.F = None
 
-    def fit(self, X_train, y_train, N=20, M=7, F=2):
+    def fit(self, X_train, y_train, N=5, M=3, F=3):
         """Fits a decision tree classifier to X_train and y_train using the TDIDT
         (top down induction of decision tree) algorithm.
         Args:
@@ -49,19 +51,36 @@ class MyRandomForestClassifier:
 
         remainder_X = [X_train[row] for row in remainder_idxs]
         remainder_y = [y_train[row] for row in remainder_idxs]
-        bootstrap_samples = []
-        for _ in range(self.N):
+        test_X = [X_train[row] for row in test_idxs]
+        test_y = [y_train[row] for row in test_idxs]
+        dec_trees = []
+        trues_preds = []
+        accs = []
+        for i in range(self.N):
             x_train, x_val, Y_train, Y_val = myevaluation.bootstrap_sample(
                 remainder_X, remainder_y, random_state=101)
-            bootstrap_samples.append([[x_train, Y_train], [x_val, Y_val]])
             dec_tree = myclassifiers.MyModifiedDecisionTreeClassifier()
-            dec_tree.fit(x_train, y_train)
+            dec_tree.fit(x_train, Y_train, F)
+            dec_trees.append(dec_tree)
+            y_preds = dec_tree.predict(x_val)
+            trues_preds.append([y_preds, x_val])
+            acc_score = myevaluation.multi_cl_accuracy(y_preds, Y_val)
+            accs.append([i, acc_score])
+        accs.sort(key=operator.itemgetter(-1), reverse=True)
+        accs = accs[:M]
+        dec_trees_clean = []
+        for acc in accs:
+            dec_trees_clean.append(dec_trees[acc[0]])
 
-    def random_attribute_subset(self, attributes):
-        # shuffle and pick first F
-        shuffled = attributes[:]  # make a copy
-        random.shuffle(shuffled)
-        return shuffled[:self.F]
+        preds = []
+        trues = []
+        for dec_tree in dec_trees_clean:
+            preds.append(dec_tree.predict(test_X))
+            trues.append(test_y)
+        preds = list(chain.from_iterable(preds))
+        trues = list(chain.from_iterable(trues))
+        tot_acc = myevaluation.multi_cl_accuracy(preds, trues)
+        print(tot_acc)
 
 
 # The Random Forest Procedure
