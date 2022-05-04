@@ -795,7 +795,11 @@ class MyModifiedDecisionTreeClassifier:
         """
         y_pred = []
         for instance in X_test:
+            print('inst', instance)
+            print(self.tree)
+            print(self.header)
             pred = self.tdidt_predict(self.header, self.tree, instance)
+            print('wtf')
             y_pred.append(pred)
 
         return y_pred  # TODO: fix this

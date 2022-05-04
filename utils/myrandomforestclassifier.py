@@ -73,9 +73,11 @@ class MyRandomForestClassifier:
 
     def predict(self, instances):
         forest_preds = []
+        print(len(self.forest))
         for inst in instances:
             tree_preds = []
             for tree in self.forest:
+                print('tree')
                 tree_preds.append(tree.predict([inst]))
             tree_preds = list(chain.from_iterable(tree_preds))
             pred = max(set(tree_preds), key=tree_preds.count)
