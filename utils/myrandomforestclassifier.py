@@ -68,19 +68,20 @@ class MyRandomForestClassifier:
             accs.append([i, acc_score])
         accs.sort(key=operator.itemgetter(-1), reverse=True)
         accs = accs[:M]
-        dec_trees_clean = []
         for acc in accs:
-            dec_trees_clean.append(dec_trees[acc[0]])
+            self.forest.append(dec_trees[acc[0]])
 
-        preds = []
-        trues = []
-        for dec_tree in dec_trees_clean:
-            preds.append(dec_tree.predict(test_X))
-            trues.append(test_y)
-        preds = list(chain.from_iterable(preds))
-        trues = list(chain.from_iterable(trues))
-        tot_acc = myevaluation.multi_cl_accuracy(preds, trues)
-        print(tot_acc)
+    def predict(self, instances):
+        forest_preds = []
+        for inst in instances:
+            tree_preds = []
+            for tree in self.forest:
+                tree_preds.append(tree.predict([inst]))
+            tree_preds = list(chain.from_iterable(tree_preds))
+            pred = max(set(tree_preds), key=tree_preds.count)
+            forest_preds.append(pred)
+
+        return forest_preds
 
 
 # The Random Forest Procedure

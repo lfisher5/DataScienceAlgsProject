@@ -224,7 +224,7 @@ def get_column(table, col_index):
     return col
 
 
-def get_categorical_frequencies(table, header, col_name):
+def get_categorical_frequencies(table, col_index, is_table=True):
     """Gets categorical frequencies for column values in table
         Args:
             table(list of list): 2d dataset
@@ -234,10 +234,12 @@ def get_categorical_frequencies(table, header, col_name):
             values: unique values in table
             counts: frequency of values
         """
-
-    col = get_column_orig(table, header, col_name)
+    if is_table:
+        col = get_column(table, col_index)
+    else:
+        col = table
     col = [str(x) for x in col]
-    values = list(set(col))
+    values = list(sorted(set(col)))
     counts = [0] * len(values)
 
     for val in col:
