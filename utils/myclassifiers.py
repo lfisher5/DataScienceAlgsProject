@@ -2,7 +2,6 @@ import operator
 import utils.myutils as myutils
 import math
 import random
-import numpy as np
 
 
 class MyDecisionTreeClassifier:
@@ -464,343 +463,129 @@ class MyDummyClassifier:
         return y_predicted
 
 
-# class MyNaiveBayesClassifier: # NOTE: Lauren's code commented out
-#     """Represents a Naive Bayes classifier.
-#     Attributes:
-#         priors(YOU CHOOSE THE MOST APPROPRIATE TYPE): The prior probabilities computed for each
-#             label in the training set.
-#         posteriors(YOU CHOOSE THE MOST APPROPRIATE TYPE): The posterior probabilities computed for each
-#             attribute value/label pair in the training set.
-#     Notes:
-#         Loosely based on sklearn's Naive Bayes classifiers: https://scikit-learn.org/stable/modules/naive_bayes.html
-#         You may add additional instance attributes if you would like, just be sure to update this docstring
-#         Terminology: instance = sample = row and attribute = feature = column
-#     """
-
-#     def __init__(self):
-#         """Initializer for MyNaiveBayesClassifier.
-#         """
-#         self.priors = None
-#         self.sorted_labels = None
-#         self.posteriors = None
-#         self.num_instances = None
-
-#     def fit(self, X_train, y_train):
-#         """Fits a Naive Bayes classifier to X_train and y_train.
-#         Args:
-#             X_train(list of list of obj): The list of training instances (samples)
-#                 The shape of X_train is (n_train_samples, n_features)
-#             y_train(list of obj): The target y values (parallel to X_train)
-#                 The shape of y_train is n_train_samples
-#         Notes:
-#             Since Naive Bayes is an eager learning algorithm, this method computes the prior probabilities
-#                 and the posterior probabilities for the training data.
-#             You are free to choose the most appropriate data structures for storing the priors
-#                 and posteriors.
-#         """
-#         # compute priors
-#         self.num_instances = len(y_train)
-#         labels, nums = myutils.get_categorical_frequencies(y_train, 0, False)
-#         self.sorted_labels = labels
-#         self.priors = {key: value for key, value in zip(labels, nums)}
-
-#         # print(self.priors)
-
-#         idxs = list(range(len(X_train)))
-#         subtables = myutils.group_by(idxs, y_train)
-#         possible_vals = []
-#         for col_idx in range(len(X_train[0])):
-#             possible_vals.append(
-#                 list(sorted(set([row[col_idx] for row in X_train]))))
-
-#         label_base = 'att'
-#         posteriors = dict()
-
-#         # iterate over possible targets from subtables
-#         # create copy of table for for row idxs in subtables subsubtables[0]
-#         # call get_frequencies for each column for row idxs in subtables subsubtables[0]
-#         # if a label does not appear from get_freqs result, insert 0 in the correct index
-
-#         for i in range(len(labels)):
-#             row_idxs = [subtables[i][j][0] for j in range(len(subtables[i]))]
-
-#             table_copy = [X_train[k] for k in row_idxs]
-#             for col_idx in range(len(X_train[0])):
-#                 vals, freqs = myutils.get_categorical_frequencies(
-#                     table_copy, col_idx)
-
-#                 if len(vals) is not len(possible_vals[col_idx]):
-#                     #print('frequency problem: ', possible_vals[col_idx])
-#                     new_freqs = [0] * len(possible_vals[col_idx])
-#                     for k, val in enumerate(vals):
-#                         new_freqs.insert(
-#                             possible_vals[col_idx].index(val), freqs[k])
-
-#                     freqs = new_freqs
-#                     vals = possible_vals[col_idx]
-
-#                 atts = [label_base + str(col_idx) + '=' + str(vals[j])
-#                         for j in range(len(vals))]
-#                 for att_idx in range(len(atts)):
-#                     if atts[att_idx] in posteriors:
-#                         posteriors[atts[att_idx]].append(freqs[att_idx])
-#                     else:
-#                         posteriors[atts[att_idx]] = [freqs[att_idx]]
-
-#         self.posteriors = posteriors
-#         # print(posteriors)
-
-#     def predict(self, X_test):
-#         """Makes predictions for test instances in X_test.
-#         Args:
-#             X_test(list of list of obj): The list of testing samples
-#                 The shape of X_test is (n_test_samples, n_features)
-#         Returns:
-#             y_predicted(list of obj): The predicted target y values (parallel to X_test)
-#         """
-#         #print('X_test', X_test)
-#         y_predicted = []
-#         for test_sample in X_test:
-#             test_post = []
-#             #print('test_post', test_post)
-#             for col_idx in range(len(test_sample)):
-#                 label = 'att' + str(col_idx) + '=' + str(test_sample[col_idx])
-
-#                 posts = self.posteriors[label]
-#                 att_post = []
-#                 for label_idx in range(len(posts)):
-#                     att_post.append((posts[label_idx] /
-#                                      self.priors[self.sorted_labels[label_idx]]))
-#                 test_post.append(att_post)
-
-#             result = [1] * len(self.sorted_labels)
-#             for col_idx in range(len(test_post)):
-#                 for label_idx in range(len(self.sorted_labels)):
-#                     result[label_idx] *= test_post[col_idx][label_idx]
-
-#             for i in range(len(result)):
-#                 result[i] *= (self.priors[self.sorted_labels[label_idx]
-#                                           ] / self.num_instances)
-
-#             #print('result', result)
-#             pred = self.sorted_labels[result.index(max(result))]
-#             y_predicted.append(pred)
-
-#         return y_predicted
-
 class MyNaiveBayesClassifier:
     """Represents a Naive Bayes classifier.
-
     Attributes:
         priors(YOU CHOOSE THE MOST APPROPRIATE TYPE): The prior probabilities computed for each
             label in the training set.
         posteriors(YOU CHOOSE THE MOST APPROPRIATE TYPE): The posterior probabilities computed for each
             attribute value/label pair in the training set.
-
     Notes:
         Loosely based on sklearn's Naive Bayes classifiers: https://scikit-learn.org/stable/modules/naive_bayes.html
         You may add additional instance attributes if you would like, just be sure to update this docstring
         Terminology: instance = sample = row and attribute = feature = column
     """
+
     def __init__(self):
         """Initializer for MyNaiveBayesClassifier.
         """
         self.priors = None
+        self.sorted_labels = None
         self.posteriors = None
-        self.att_values = None
-
-    def y_labels(self, y_train):
-        """Obtains unique labels y_train and sorts them
-
-        Args:
-            y_train(list of obj): The target y values (parallel to X_train)
-                The shape of y_train is n_train_samples
-        
-        Returns:
-            y_labels_sorted(list): sorted list of unique identifiers for class labels
-        """
-        y_labels = []
-        for i in range(len(y_train)):
-            if y_train[i] not in y_labels:
-                y_labels.append(y_train[i])
-        
-        y_labels_sorted = sorted(y_labels)
-
-        return y_labels_sorted
-
-    def stitched_datasets(self, X_train, y_train):
-        """Stitches X_train and y_train together
-
-        Args:
-            X_train(list of list of obj): The list of training instances (samples)
-                The shape of X_train is (n_train_samples, n_features)
-            y_train(list of obj): The target y values (parallel to X_train)
-                The shape of y_train is n_train_samples
-        
-        Returns:
-            stitched_X_y(list of lists): 2D list of mixed data types
-        """
-        # Create a list of possible attribute values using stitched list 
-        stitched_X_y = []
-        X_vals = []
-        for i in range(len(X_train)):
-            X_vals = []
-            for j in range(len(X_train[0])):
-                X_vals.append(X_train[i][j])
-            X_vals.append(y_train[i])
-            stitched_X_y.append(X_vals)
-        
-        return stitched_X_y
-
-    def attributes_and_values(self, X_train):
-        """For each column, this method determines the unique attribute values and places them in a 2D list. 
-
-        Args:
-            X_train(list of list of obj): The list of training instances (samples)
-                The shape of X_train is (n_train_samples, n_features)
-        
-        Returns:
-            att_values(list of lists): 2D list of mixed data types
-        """
-        att_values = []
-        values = []
-        values_sorted = []
-        for j in range(len(X_train[0])):
-            values = []
-            values_sorted = []
-            for i in range(len(X_train)):
-                if X_train[i][j] not in values:
-                    values.append(X_train[i][j])
-            values_sorted = sorted(values)
-            att_values.append(values_sorted) # each element refers to an attribute/column
-        
-        return att_values
-
-    def convert_idxs_to_class_labels(self, y_train, y_pred):
-        """Fits a Naive Bayes classifier to X_train and y_train.
-
-        Args:
-            y_train(list of obj): The target y values (parallel to X_train)
-                The shape of y_train is n_train_samples
-            y_pred(list of obj): The predicted y values (parallel to X_train)
-                The shape of y_pred is n_train_samples
-        
-        Returns:
-            y_pred_class(list of lists): 2D list of mixed data types
-        """
-        y_pred_class = y_pred.copy()
-        y_labels_sorted = self.y_labels(y_train)
-
-        for i in range(len(y_pred_class)):
-            for n in range((len(y_labels_sorted))):
-                if y_pred_class[i] == y_labels_sorted.index(y_labels_sorted[n]):
-                    y_pred_class[i] = y_labels_sorted[n]
-
-        return y_pred_class
+        self.num_instances = None
 
     def fit(self, X_train, y_train):
         """Fits a Naive Bayes classifier to X_train and y_train.
-
         Args:
             X_train(list of list of obj): The list of training instances (samples)
                 The shape of X_train is (n_train_samples, n_features)
             y_train(list of obj): The target y values (parallel to X_train)
                 The shape of y_train is n_train_samples
-
         Notes:
             Since Naive Bayes is an eager learning algorithm, this method computes the prior probabilities
                 and the posterior probabilities for the training data.
             You are free to choose the most appropriate data structures for storing the priors
                 and posteriors.
         """
-        y_labels_sorted = self.y_labels(y_train)
+        # compute priors
+        self.num_instances = len(y_train)
+        labels, nums = myutils.get_categorical_frequencies(y_train, 0, False)
+        self.sorted_labels = labels
+        self.priors = {key: value for key, value in zip(labels, nums)}
 
-        self.priors = [] 
-        for i in range(len(y_labels_sorted)): 
-            count = 0
-            for j in range(len(y_train)):
-                if y_labels_sorted[i] == y_train[j]:
-                    count += 1 
-            self.priors.append(count / len(y_train))
-        
-        self.att_values = []
-        stitched_X_y = self.stitched_datasets(X_train, y_train)
-        self.att_values = self.attributes_and_values(X_train)
-        
-        # Calculating posteriors (most disgusting piece of code I've ever written)
-        self.posteriors = []
-        att_posterior = []
-        # Must create a count of all the attribute values along with their classification 
-        for m in range(len(y_labels_sorted)):
-            for j in range(len(stitched_X_y[0]) - 1): # -1 to elimante the possibility to index to the class label, shares same size as att_values 
-                att_posterior = []
-                for k in range(len(self.att_values[j])): # j as len will change based on the number of attribute values  
-                    count = 0
-                    for i in range(len(stitched_X_y)):
-                        if stitched_X_y[i][j] == self.att_values[j][k] and stitched_X_y[i][-1] == y_labels_sorted[m]:
-                            count += 1
-                            # print("att_values:", att_values[j][k], "--- stitched", stitched_X_y[i][j], "--- class:", y_labels_sorted[m], "--- count:", count) # used for debugging 
-                    att_posterior.append((count / len(y_train) / self.priors[m])) # provides floats 
-                    # att_posterior.append(count) # interger numbers (easier to debug)
-                self.posteriors.append(att_posterior) # in the form of [[att1_values count for "no"], [att2_values count for "no"]
-        
+        # print(self.priors)
+
+        idxs = list(range(len(X_train)))
+        subtables = myutils.group_by(idxs, y_train)
+        possible_vals = []
+        for col_idx in range(len(X_train[0])):
+            possible_vals.append(
+                list(sorted(set([row[col_idx] for row in X_train]))))
+
+        label_base = 'att'
+        posteriors = dict()
+
+        # iterate over possible targets from subtables
+        # create copy of table for for row idxs in subtables subsubtables[0]
+        # call get_frequencies for each column for row idxs in subtables subsubtables[0]
+        # if a label does not appear from get_freqs result, insert 0 in the correct index
+
+        for i in range(len(labels)):
+            row_idxs = [subtables[i][j][0] for j in range(len(subtables[i]))]
+
+            table_copy = [X_train[k] for k in row_idxs]
+            for col_idx in range(len(X_train[0])):
+                vals, freqs = myutils.get_categorical_frequencies(
+                    table_copy, col_idx)
+
+                if len(vals) is not len(possible_vals[col_idx]):
+                    #print('frequency problem: ', possible_vals[col_idx])
+                    new_freqs = [0] * len(possible_vals[col_idx])
+                    for k, val in enumerate(vals):
+                        new_freqs.insert(
+                            possible_vals[col_idx].index(val), freqs[k])
+
+                    freqs = new_freqs
+                    vals = possible_vals[col_idx]
+
+                atts = [label_base + str(col_idx) + '=' + str(vals[j])
+                        for j in range(len(vals))]
+                for att_idx in range(len(atts)):
+                    if atts[att_idx] in posteriors:
+                        posteriors[atts[att_idx]].append(freqs[att_idx])
+                    else:
+                        posteriors[atts[att_idx]] = [freqs[att_idx]]
+
+        self.posteriors = posteriors
+        # print(posteriors)
+
     def predict(self, X_test):
         """Makes predictions for test instances in X_test.
-
         Args:
             X_test(list of list of obj): The list of testing samples
                 The shape of X_test is (n_test_samples, n_features)
-
         Returns:
             y_predicted(list of obj): The predicted target y values (parallel to X_test)
         """
-        num_labels = len(self.priors)
-        posteriors_copy = self.posteriors.copy() # copy as to not change posteriors 
-        pred_product = []
-        post = []
+        #print('X_test', X_test)
+        y_predicted = []
+        for test_sample in X_test:
+            test_post = []
+            #print('test_post', test_post)
+            for col_idx in range(len(test_sample)):
+                label = 'att' + str(col_idx) + '=' + str(test_sample[col_idx])
 
-        # Different approach -- take slices of posteriors shell for yes and no classifications, then index through values to match att_values to posteriors
-        for n in range(num_labels):
-            posteriors_slice = []
-            posteriors_slice = posteriors_copy[n * len(self.att_values) : (n + 1) * len(self.att_values)] # slice contains the shape of att_values essentially mapping posteriors to att_values
-            for i in range(len(X_test)): # number of test cases 
-                post = []
-                for j in range(len(X_test[0])): # number of attributes 
-                    for k in range(len(self.att_values[j])):
-                        if X_test[i][j] == self.att_values[j][k]:
-                            # print(X_test[i], X_test[i][j], att_values[j][k], " --- ", i, j) # Used for debugging 
-                            post.append(posteriors_slice[j][k])
-                pred_product.append(np.prod(post))
+                posts = self.posteriors[label]
+                att_post = []
+                for label_idx in range(len(posts)):
+                    att_post.append((posts[label_idx] /
+                                     self.priors[self.sorted_labels[label_idx]]))
+                test_post.append(att_post)
 
-        # Creates slices of predictions based on class label
-        label_slices = int(len(pred_product) / num_labels)
-        pred_slices = [] 
+            result = [1] * len(self.sorted_labels)
+            for col_idx in range(len(test_post)):
+                for label_idx in range(len(self.sorted_labels)):
+                    result[label_idx] *= test_post[col_idx][label_idx]
 
-        for n in range(num_labels):
-            pred_slices.append(pred_product[label_slices * n : (n + 1) * label_slices])
+            for i in range(len(result)):
+                result[i] *= (self.priors[self.sorted_labels[label_idx]
+                                          ] / self.num_instances)
 
-        # Multiplies priors into posteriors
-        for i in range(len(pred_slices)):
-            for j in range(len(pred_slices[0])):
-                pred_slices[i][j] = pred_slices[i][j] * self.priors[i]
-        
-        # Matches prediction values of class to X_test element
-        pred_temp = [] 
-        pred_matched = [] 
+            #print('result', result)
+            pred = self.sorted_labels[result.index(max(result))]
+            y_predicted.append(pred)
 
-        for j in range(len(pred_slices[0])):
-            pred_temp = []
-            for i in range(len(pred_slices)): 
-                pred_temp.append(pred_slices[i][j])
-            pred_matched.append(pred_temp)
-            
-        # Predicts the index for the class label
-        pred_idxs = []
-
-        for i in range(len(pred_matched)):
-            pred_idxs.append(pred_matched[i].index(max(pred_matched[i])))
-
-        return pred_idxs
+        return y_predicted
 
 
 class MyModifiedDecisionTreeClassifier:

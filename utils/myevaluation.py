@@ -205,9 +205,6 @@ def confusion_matrix(y_true, y_pred, labels):
         Loosely based on sklearn's confusion_matrix():
             https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
     """
-    # print("y_true:", y_true, len(y_true))
-    # print("y_pred:", y_pred, len(y_pred))
-    # print("labels:", labels, len(labels))
 
     conf_matrix = [[0 for _ in range(len(labels))] for _ in range(len(labels))]
     for k in range(len(y_pred)):
